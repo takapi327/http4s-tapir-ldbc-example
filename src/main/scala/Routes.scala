@@ -18,7 +18,8 @@ import org.http4s.circe.CirceEntityEncoder.*
 import presentation.controller.*
 
 class Routes @Inject() (
-  categoryController: CategoryController
+  categoryController: CategoryController,
+  taskController: TaskController
 ):
 
   given Semigroup[HttpRoutes[IO]] = _ combineK _
@@ -28,22 +29,29 @@ class Routes @Inject() (
   }
 
   private val category: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "category" => Ok()
-    case POST -> Root / "category" => NoContent()
+    case GET -> Root / "category" => categoryController.getAll().flatMap(Ok(_))
+    case request@POST -> Root / "category" => categoryController.create(request) >> Created()
     case GET -> Root / "category" / id => categoryController.get(id.toLong).flatMap {
       case Some(value) => Ok(value.asJson)
       case None => NotFound()
     }
-    case PUT -> Root / "category" / id => NoContent()
-    case DELETE -> Root / "category" / id => NoContent()
+    case request@PUT -> Root / "category" / id => categoryController.update(id.toLong, request) >> NoContent()
+    case DELETE -> Root / "category" / id => categoryController.delete(id.toLong) >> NoContent()
   }
 
   private val task: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "task" => Ok()
-    case POST -> Root / "task" => NoContent()
-    case GET -> Root / "task" / id => Ok(id)
-    case PUT -> Root / "task" / id => NoContent()
-    case DELETE -> Root / "task" / id => NoContent()
+    case GET -> Root / "task" => taskController.getAll().flatMap(Ok(_))
+    case request@POST -> Root / "task" => taskController.create(request).flatMap {
+      case -1 => BadRequest()
+      case 0 => NoContent()
+      case _ => Created()
+    }
+    case GET -> Root / "task" / id => taskController.get(id.toLong).flatMap {
+      case Some(value) => Ok(value.asJson)
+      case None => NotFound()
+    }
+    case request@PUT -> Root / "task" / id => taskController.update(id.toLong, request) >> NoContent()
+    case DELETE -> Root / "task" / id => taskController.delete(id.toLong) >> NoContent()
   }
 
   val router = Router(
