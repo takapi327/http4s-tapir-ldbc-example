@@ -9,14 +9,19 @@ lazy val root = (project in file("."))
     scalacOptions ++= Seq(
       "-Xfatal-warnings",
       "-deprecation",
-      "-Wunused:all"
+      "-Wunused:all",
+      "-feature",
+      "-language:implicitConversions"
     ),
     libraryDependencies ++= Seq(
       "com.google.inject" % "guice" % "5.1.0",
       "mysql" % "mysql-connector-java" % "8.0.33",
       "ch.qos.logback" % "logback-classic" % "1.4.7",
       "org.http4s" %% "http4s-dsl" % "0.23.18",
-      "org.http4s" %% "http4s-ember-server" % "0.23.18"
+      "org.http4s" %% "http4s-ember-server" % "0.23.18",
+      "org.http4s" %% "http4s-circe" % "0.23.19",
+      "io.circe" %% "circe-generic" % "0.14.5",
+      ldbcDslIO
     ),
     Compile / parseDirectories := List(
       baseDirectory.value / "mysql" / "data"

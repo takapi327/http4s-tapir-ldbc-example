@@ -5,6 +5,8 @@ database:
       columns:
         - name: 'id'
           type: 'Long'
+        - name: 'color'
+          type: 'Short'
 
     - name: 'task'
       columns:

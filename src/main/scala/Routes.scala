@@ -7,9 +7,13 @@ import cats.syntax.all.*
 
 import cats.effect.IO
 
+import io.circe.syntax.*
+import io.circe.generic.auto.*
+
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.server.Router
+import org.http4s.circe.CirceEntityEncoder.*
 
 import presentation.controller.*
 
@@ -26,7 +30,10 @@ class Routes @Inject() (
   private val category: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "category" => Ok()
     case POST -> Root / "category" => NoContent()
-    case GET -> Root / "category" / id => categoryController.get(id.toLong) >> Ok(id)
+    case GET -> Root / "category" / id => categoryController.get(id.toLong).flatMap {
+      case Some(value) => Ok(value.asJson)
+      case None => NotFound()
+    }
     case PUT -> Root / "category" / id => NoContent()
     case DELETE -> Root / "category" / id => NoContent()
   }
