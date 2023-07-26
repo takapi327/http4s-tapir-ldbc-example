@@ -6,7 +6,10 @@ database:
         - name: 'id'
           type: 'Long'
         - name: 'color'
-          type: 'Short'
+          type: 'Category.Color'
+      object:
+        extends:
+          - 'infrastructure.mysql.custom.CategoryCustom'
 
     - name: 'task'
       columns:

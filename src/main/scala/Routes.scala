@@ -30,8 +30,11 @@ class Routes @Inject() (
 
   private val category: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "category" => categoryController.getAll().flatMap(Ok(_))
-    case request@POST -> Root / "category" => categoryController.create(request) >> Created()
-    case GET -> Root / "category" / id => categoryController.get(id.toLong).flatMap {
+    case request@POST -> Root / "category" => categoryController.create(request) >>= {
+      case -1 => BadRequest()
+      case _ => Created()
+    }
+    case GET -> Root / "category" / id => categoryController.get(id.toLong) >>= {
       case Some(value) => Ok(value.asJson)
       case None => NotFound()
     }
@@ -41,12 +44,12 @@ class Routes @Inject() (
 
   private val task: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "task" => taskController.getAll().flatMap(Ok(_))
-    case request@POST -> Root / "task" => taskController.create(request).flatMap {
+    case request@POST -> Root / "task" => taskController.create(request) >>= {
       case -1 => BadRequest()
       case 0 => NoContent()
       case _ => Created()
     }
-    case GET -> Root / "task" / id => taskController.get(id.toLong).flatMap {
+    case GET -> Root / "task" / id => taskController.get(id.toLong) >>= {
       case Some(value) => Ok(value.asJson)
       case None => NotFound()
     }

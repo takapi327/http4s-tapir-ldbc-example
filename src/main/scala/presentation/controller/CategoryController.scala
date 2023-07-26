@@ -32,16 +32,19 @@ class CategoryController @Inject() (
   def create(request: Request[IO]): IO[Int] =
     for
       input <- request.as[Input]
-      result <- categoryRepository.create(input.name, input.slug, input.color)
+      result <- Category.Color.values.find(_.code == input.color) match
+        case Some(color) => categoryRepository.create(input.name, input.slug, color.code)
+        case None => IO.pure(-1)
     yield result
 
   def update(id: Long, request: Request[IO]): IO[Int] =
     for
       input <- request.as[Input]
       old <- categoryRepository.get(id)
-      result <- old match
-        case Some(value) => categoryRepository.update(value.copy(name = input.name, slug = input.slug, color = input.color))
-        case None => IO.pure(0)
+      result <- (old, Category.Color.values.find(_.code == input.color)) match
+        case (Some(value), Some(color)) => categoryRepository.update(value.copy(name = input.name, slug = input.slug, color = color))
+        case (_, None) => IO.pure(-1)
+        case (None, _) => IO.pure(0)
     yield result
 
   def delete(id: Long): IO[Int] = taskCategoryLinksService.delete(id)
