@@ -18,4 +18,12 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-dsl" % "0.23.18",
       "org.http4s" %% "http4s-ember-server" % "0.23.18"
     ),
+    Compile / parseDirectories := List(
+      baseDirectory.value / "mysql" / "data"
+    ),
+    Compile / excludeFiles := List("mysql_user.sql"),
+    Compile / customYamlFiles := List(
+      baseDirectory.value / "mysql" / "custom" / "example.yml"
+    )
   )
+  .enablePlugins(Ldbc)

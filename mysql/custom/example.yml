@@ -1,0 +1,14 @@
+database:
+  name: 'example'
+  tables:
+    - name: 'category'
+      columns:
+        - name: 'id'
+          type: 'Long'
+
+    - name: 'task'
+      columns:
+        - name: 'id'
+          type: 'Long'
+        - name: 'category_id'
+          type: 'Long'
