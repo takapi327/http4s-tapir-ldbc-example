@@ -31,3 +31,21 @@ class CategoryRepository @Inject() (
       .query[Option[Category]]
       .transaction
       .run(dataSource)
+
+  def getAll(): IO[Seq[Category]] =
+    sql"SELECT * FROM category"
+      .query[Seq[Category]]
+      .transaction
+      .run(dataSource)
+
+  def create(name: String, slug: String, color: Short): IO[Int] =
+    sql"INSERT INTO category (name, slug, color) VALUES ($name, $slug, $color)"
+      .update()
+      .transaction
+      .run(dataSource)
+
+  def update(category: Category): IO[Int] =
+    sql"UPDATE category SET name = ${ category.name }, slug = ${ category.slug }, color = ${ category.color } WHERE id = ${ category.id }"
+      .update()
+      .transaction
+      .run(dataSource)
