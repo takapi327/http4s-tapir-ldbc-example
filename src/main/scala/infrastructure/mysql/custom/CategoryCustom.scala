@@ -9,7 +9,7 @@ import ldbc.sql.*
 
 trait CategoryCustom:
 
-  enum Color(val code: Short) extends Enum:
+  enum Color(val code: Byte) extends Enum:
     case RED extends Color(1)
     case BLUE extends Color(2)
     case YELLOW extends Color(3)
@@ -20,4 +20,4 @@ trait CategoryCustom:
     DataType.mapping[TINYINT[Byte], Color]
 
   given ResultSetReader[IO, Color] =
-    ResultSetReader.mapping[IO, Byte, Color](n => Color.values.find(_.code == n.toShort).get)
+    ResultSetReader.mapping[IO, Byte, Color](n => Color.values.find(_.code == n).get)

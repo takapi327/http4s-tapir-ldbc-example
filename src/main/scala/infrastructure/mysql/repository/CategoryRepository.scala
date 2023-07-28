@@ -10,11 +10,20 @@ import cats.effect.IO
 import ldbc.sql.*
 import ldbc.sql.syntax.*
 import ldbc.dsl.io.*
+import ldbc.dsl.logging.{ LogEvent, LogHandler }
 import ldbc.generated.example.Category
 
 class CategoryRepository @Inject() (
   dataSource: DataSource
 ):
+
+  given LogHandler[IO] with
+    override def run(logEvent: LogEvent): IO[Unit] =
+      IO.println(
+        logEvent match
+          case LogEvent.Success(sql, args) => s"Successful Statement Execution: ${sql} ${args.mkString(",")}"
+          case LogEvent.ExecFailure(sql, args, failure) => s"Failed Statement Execution: ${sql} ${args.mkString(",")}" ++ failure.getMessage
+      )
 
   given Kleisli[IO, ResultSet[IO], Category] =
     for
@@ -29,23 +38,23 @@ class CategoryRepository @Inject() (
   def get(id: Long): IO[Option[Category]] =
     sql"SELECT * FROM category WHERE id = $id"
       .query[Option[Category]]
-      .transaction
+      .readOnly
       .run(dataSource)
 
   def getAll(): IO[Seq[Category]] =
     sql"SELECT * FROM category"
       .query[Seq[Category]]
-      .transaction
+      .readOnly
       .run(dataSource)
 
   def create(name: String, slug: String, color: Short): IO[Int] =
     sql"INSERT INTO category (name, slug, color) VALUES ($name, $slug, $color)"
       .update()
-      .transaction
+      .autoCommit
       .run(dataSource)
 
   def update(category: Category): IO[Int] =
     sql"UPDATE category SET name = ${ category.name }, slug = ${ category.slug }, color = ${ category.color } WHERE id = ${ category.id }"
       .update()
-      .transaction
+      .autoCommit
       .run(dataSource)
