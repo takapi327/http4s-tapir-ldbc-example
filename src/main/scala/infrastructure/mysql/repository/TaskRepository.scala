@@ -10,6 +10,7 @@ import ldbc.sql.*
 import ldbc.dsl.io.*
 import ldbc.dsl.logging.LogHandler
 import ldbc.generated.example.Task
+import ldbc.query.builder.TableQuery
 
 class TaskRepository @Inject() (
   dataSource: DataSource
@@ -20,35 +21,34 @@ class TaskRepository @Inject() (
   given ResultSetReader[IO, Task.Status] =
     ResultSetReader.mapping[IO, String, Task.Status](v => Task.Status.values.find(_.toString == v).get)
 
+  private val task = TableQuery[IO, Task](Task.table)
+
   def get(id: Long): IO[Option[Task]] =
-    sql"SELECT * FROM task WHERE id = $id"
+    task.selectAll
       .query[Task]
       .headOption
       .readOnly
       .run(dataSource)
 
   def getAll(): IO[List[Task]] =
-    sql"SELECT * FROM task"
+    task.selectAll
       .query[Task]
       .toList
       .readOnly
       .run(dataSource)
 
   def create(categoryId: Long, title: String, body: String, status: Task.Status): IO[Int] =
-    sql"INSERT INTO task (category_id, title, body, status) VALUES ($categoryId, $title, $body, ${ status.toString })"
+    task.selectInsert[(Long, String, String, Task.Status)](table => (table.categoryId, table.title, table.body, table.status))
+      .values((categoryId, title, body, status))
       .update
       .autoCommit
       .run(dataSource)
 
-  def update(task: Task): IO[Int] =
-    sql"""
-      UPDATE task SET
-        category_id = ${ task.categoryId },
-        title = ${ task.title },
-        body = ${ task.body },
-        status = ${ task.status.toString }
-      WHERE id = ${ task.id }
-    """
+  def update(row: Task): IO[Int] =
+    task.update("categoryId", row.categoryId)
+      .set("title", row.title)
+      .set("body", row.body)
+      .set("status", row.status)
       .update
       .autoCommit
       .run(dataSource)
