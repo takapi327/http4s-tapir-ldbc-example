@@ -4,57 +4,41 @@ package infrastructure.mysql.repository
 import javax.sql.DataSource
 import javax.inject.Inject
 
-import cats.data.Kleisli
 import cats.effect.IO
 
 import ldbc.sql.*
-import ldbc.sql.syntax.*
 import ldbc.dsl.io.*
-import ldbc.dsl.logging.{ LogEvent, LogHandler }
+import ldbc.dsl.logging.LogHandler
 import ldbc.generated.example.Category
 
 class CategoryRepository @Inject() (
   dataSource: DataSource
 ):
 
-  given LogHandler[IO] with
-    override def run(logEvent: LogEvent): IO[Unit] =
-      IO.println(
-        logEvent match
-          case LogEvent.Success(sql, args) => s"Successful Statement Execution: ${sql} ${args.mkString(",")}"
-          case LogEvent.ExecFailure(sql, args, failure) => s"Failed Statement Execution: ${sql} ${args.mkString(",")}" ++ failure.getMessage
-      )
-
-  given Kleisli[IO, ResultSet[IO], Category] =
-    for
-      id        <- Category.table.id()
-      name      <- Category.table.name()
-      slug      <- Category.table.slug()
-      color     <- Category.table.color()
-      updatedAt <- Category.table.updatedAt()
-      createdAt <- Category.table.createdAt()
-    yield Category(id, name, slug, color, updatedAt, createdAt)
+  given LogHandler[IO] = LogHandler.consoleLogger[IO]
 
   def get(id: Long): IO[Option[Category]] =
     sql"SELECT * FROM category WHERE id = $id"
-      .query[Option[Category]]
+      .query[Category]
+      .headOption
       .readOnly
       .run(dataSource)
 
-  def getAll(): IO[Seq[Category]] =
+  def getAll(): IO[List[Category]] =
     sql"SELECT * FROM category"
-      .query[Seq[Category]]
+      .query[Category]
+      .toList
       .readOnly
       .run(dataSource)
 
   def create(name: String, slug: String, color: Short): IO[Int] =
     sql"INSERT INTO category (name, slug, color) VALUES ($name, $slug, $color)"
-      .update()
+      .update
       .autoCommit
       .run(dataSource)
 
   def update(category: Category): IO[Int] =
     sql"UPDATE category SET name = ${ category.name }, slug = ${ category.slug }, color = ${ category.color } WHERE id = ${ category.id }"
-      .update()
+      .update
       .autoCommit
       .run(dataSource)
