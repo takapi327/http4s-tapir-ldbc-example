@@ -24,7 +24,7 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-ember-server" % "0.23.18",
       "org.http4s" %% "http4s-circe" % "0.23.19",
       "io.circe" %% "circe-generic" % "0.14.5",
-      ldbcDslIO
+      ldbcDsl
     ),
     Compile / parseDirectories := List(
       baseDirectory.value / "mysql" / "data"
