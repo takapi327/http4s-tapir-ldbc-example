@@ -2,6 +2,7 @@ version: '3'
 services:
   mysql:
     image: mysql:8.0.33
+    container_name: ldbc-example
     platform: linux/amd64 # Setting for M1 mac
     environment:
       MYSQL_USER: 'takapi327'
@@ -12,3 +13,7 @@ services:
     volumes:
       - ./mysql/data:/docker-entrypoint-initdb.d
       - ./mysql/my.cnf:/etc/mysql/conf.d/my.cn
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
