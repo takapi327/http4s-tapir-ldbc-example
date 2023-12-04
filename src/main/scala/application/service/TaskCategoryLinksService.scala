@@ -41,13 +41,11 @@ class TaskCategoryLinksService @Inject() (
           case LogEvent.ExecFailure(sql, args, failure) => s"Failed Statement Execution: ${replacePlaceholders(sql, args)} \n ${failure.getMessage}"
       )
 
-  private val task = TableQuery[IO, Task](Task.table)
-
   def create(categoryId: Long, title: String, body: String, status: Task.Status): IO[Int] =
     val query = for
       categoryOpt <- Query.category.select(_.id).where(_.id === categoryId).headOption
       result <- categoryOpt match
-        case Some(_) => task.insertInto(
+        case Some(_) => Query.task.insertInto(
           table => (table.categoryId, table.title, table.body, table.status)
         ).values((categoryId, title, body, status)).update
         case None => ConnectionIO.pure[IO, Int](-1)
