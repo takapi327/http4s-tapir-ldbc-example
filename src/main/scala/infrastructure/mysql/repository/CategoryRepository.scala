@@ -18,27 +18,25 @@ class CategoryRepository @Inject() (
   given LogHandler[IO] = LogHandler.consoleLogger[IO]
 
   def get(id: Long): IO[Option[Category]] =
-    sql"SELECT * FROM category WHERE id = $id"
-      .query[Category]
-      .headOption
-      .readOnly
-      .run(dataSource)
+    Query.category.selectAll.where(_.id === id)
+      .headOption[Category]
+      .readOnly(dataSource)
 
   def getAll(): IO[List[Category]] =
-    sql"SELECT * FROM category"
-      .query[Category]
-      .toList
-      .readOnly
-      .run(dataSource)
+    Query.category.selectAll
+      .toList[Category]
+      .readOnly(dataSource)
 
   def create(name: String, slug: String, color: Short): IO[Int] =
-    sql"INSERT INTO category (name, slug, color) VALUES ($name, $slug, $color)"
+    Query.category.insertInto(v => (v.name, v.slug, v.color))
+      .values((name, slug, Category.Color.values.find(_.code == color).get))
       .update
-      .autoCommit
-      .run(dataSource)
+      .autoCommit(dataSource)
 
   def update(category: Category): IO[Int] =
-    sql"UPDATE category SET name = ${ category.name }, slug = ${ category.slug }, color = ${ category.color } WHERE id = ${ category.id }"
+    Query.category.update("name", category.name)
+      .set("slug", category.slug)
+      .set("color", category.color)
+      .where(_.id === category.id)
       .update
-      .autoCommit
-      .run(dataSource)
+      .autoCommit(dataSource)
