@@ -10,6 +10,11 @@ import ldbc.sql.*
 import ldbc.dsl.ConnectionIO
 import ldbc.dsl.io.*
 import ldbc.dsl.logging.{ LogEvent, LogHandler }
+import ldbc.query.builder.TableQuery
+
+import ldbc.generated.example.{ Task, Category }
+
+import infrastructure.mysql.repository.Query
 
 class TaskCategoryLinksService @Inject() (
   dataSource: DataSource,
@@ -36,10 +41,23 @@ class TaskCategoryLinksService @Inject() (
           case LogEvent.ExecFailure(sql, args, failure) => s"Failed Statement Execution: ${replacePlaceholders(sql, args)} \n ${failure.getMessage}"
       )
 
+  private val task = TableQuery[IO, Task](Task.table)
+
+  def create(categoryId: Long, title: String, body: String, status: Task.Status): IO[Int] =
+    val query = for
+      categoryOpt <- Query.category.select(_.id).where(_.id === categoryId).headOption
+      result <- categoryOpt match
+        case Some(_) => task.insertInto(
+          table => (table.categoryId, table.title, table.body, table.status)
+        ).values((categoryId, title, body, status)).update
+        case None => ConnectionIO.pure[IO, Int](-1)
+    yield result
+    query.transaction(dataSource)
+
   def delete(id: Long): IO[Int] =
     (for
-      categoryDeleted <- sql"DELETE FROM category WHERE id = $id".update
+      categoryDeleted <- Query.category.delete.where(_.id === id).update
       taskDeleted <- categoryDeleted match
         case 0 => ConnectionIO.pure[IO, Int](0)
-        case _ => sql"DELETE FROM task WHERE category_id = $id".update
-    yield categoryDeleted + taskDeleted).transaction.run(dataSource)
+        case _ => Query.task.delete.where(_.categoryId === id).update
+    yield categoryDeleted + taskDeleted).transaction(dataSource)
