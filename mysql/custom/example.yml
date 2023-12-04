@@ -17,3 +17,6 @@ database:
           type: 'Long'
         - name: 'category_id'
           type: 'Long'
+      object:
+        extends:
+          - 'infrastructure.mysql.custom.TaskCustom'
