@@ -16,10 +16,11 @@ import org.http4s.circe.CirceEntityDecoder.*
 import ldbc.generated.example.Task
 
 import infrastructure.mysql.repository.*
+import application.service.TaskCategoryLinksService
 
 class TaskController @Inject() (
   taskRepository: TaskRepository,
-  categoryRepository: CategoryRepository
+  taskCategoryLinksService: TaskCategoryLinksService
 ):
 
   case class Input(categoryId: Long, title: String, body: String, status: Task.Status)
@@ -38,19 +39,13 @@ class TaskController @Inject() (
   def create(request: Request[IO]): IO[Int] =
     for
       input <- request.as[Input]
-      category <- categoryRepository.get(input.categoryId)
-      result <- category match
-        case Some(value) => taskRepository.create(value.id, input.title, input.body, input.status)
-        case None => IO.pure(-1)
+      result <- taskCategoryLinksService.create(input.categoryId, input.title, input.body, input.status)
     yield result
 
   def update(id: Long, request: Request[IO]): IO[Int] =
     for
       input <- request.as[Input]
-      old <- taskRepository.get(id)
-      result <- old match
-        case Some(value) => taskRepository.update(value.copy(categoryId = input.categoryId, title = input.title, body = input.body, status = input.status))
-        case None => IO.pure(0)
+      result <- taskRepository.update(id, input.categoryId, input.title, input.body, input.status)
     yield result
 
   def delete(id: Long): IO[Int] = taskRepository.delete(id)
