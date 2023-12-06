@@ -3,6 +3,7 @@ import ReleaseTransformations.*
 
 ThisBuild / organization := "com.github.takapi327"
 ThisBuild / startYear := Some(2023)
+ThisBuild / resolvers += "Lepus Maven" at "s3://com.github.takapi327.s3-ap-northeast-1.amazonaws.com/ldbc/"
 
 lazy val root = (project in file("."))
   .settings(
