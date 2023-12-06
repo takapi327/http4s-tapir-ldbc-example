@@ -41,7 +41,7 @@ lazy val root = (project in file("."))
 
 /** setting AWS Ecr */
 Ecr / region := Region.getRegion(Regions.AP_NORTHEAST_1)
-Ecr / repositoryName := (Docker / packageName).value
+Ecr / repositoryName := "aurora-verification-server"
 Ecr / repositoryTags := Seq(version.value, "latest")
 Ecr / localDockerImage := (Docker / packageName).value + ":" + (Docker / version).value
 

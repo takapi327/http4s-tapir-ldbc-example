@@ -27,7 +27,7 @@ class CategoryController @Inject() (
   def get(id: Long): IO[Option[Category]] =
     categoryRepository.get(id)
 
-  def getAll(): IO[Seq[Category]] = categoryRepository.getAll()
+  def getAll: IO[Seq[Category]] = categoryRepository.getAll
 
   def create(request: Request[IO]): IO[Int] =
     for

@@ -29,7 +29,7 @@ class Routes @Inject() (
   }
 
   private val category: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "category" => categoryController.getAll().flatMap(Ok(_))
+    case GET -> Root / "category" => categoryController.getAll.flatMap(Ok(_))
     case request@POST -> Root / "category" => categoryController.create(request) >>= {
       case -1 => BadRequest()
       case _ => Created()
@@ -43,7 +43,7 @@ class Routes @Inject() (
   }
 
   private val task: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "task" => taskController.getAll().flatMap(Ok(_))
+    case GET -> Root / "task" => taskController.getAll.flatMap(Ok(_))
     case request@POST -> Root / "task" => taskController.create(request) >>= {
       case -1 => BadRequest()
       case 0 => NoContent()

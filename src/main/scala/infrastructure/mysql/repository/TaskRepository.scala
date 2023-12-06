@@ -25,7 +25,7 @@ class TaskRepository @Inject() (
       .headOption[Task]
       .readOnly(dataSource)
 
-  def getAll(): IO[List[Task]] =
+  def getAll: IO[List[Task]] =
     Query.task.selectAll
       .toList[Task]
       .readOnly(dataSource)

@@ -34,7 +34,7 @@ class TaskController @Inject() (
   def get(id: Long): IO[Option[Task]] =
     taskRepository.get(id)
 
-  def getAll(): IO[Seq[Task]] = taskRepository.getAll()
+  def getAll: IO[Seq[Task]] = taskRepository.getAll
 
   def create(request: Request[IO]): IO[Int] =
     for

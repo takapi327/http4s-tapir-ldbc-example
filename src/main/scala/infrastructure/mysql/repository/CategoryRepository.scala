@@ -22,7 +22,7 @@ class CategoryRepository @Inject() (
       .headOption[Category]
       .readOnly(dataSource)
 
-  def getAll(): IO[List[Category]] =
+  def getAll: IO[List[Category]] =
     Query.category.selectAll
       .toList[Category]
       .readOnly(dataSource)
