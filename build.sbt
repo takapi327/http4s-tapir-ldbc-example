@@ -1,9 +1,8 @@
 import com.amazonaws.regions.{ Region, Regions }
 import ReleaseTransformations.*
 
-ThisBuild / organization := "com.github.takapi327"
+ThisBuild / organization := "io.github.takapi327"
 ThisBuild / startYear := Some(2023)
-ThisBuild / resolvers += "Lepus Maven" at "https://s3-ap-northeast-1.amazonaws.com/com.github.takapi327/ldbc/"
 
 lazy val root = (project in file("."))
   .settings(
