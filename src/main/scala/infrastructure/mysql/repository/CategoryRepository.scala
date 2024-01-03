@@ -1,18 +1,16 @@
 
 package infrastructure.mysql.repository
 
-import javax.sql.DataSource
 import javax.inject.Inject
 
 import cats.effect.IO
 
-import ldbc.sql.*
 import ldbc.dsl.io.*
 import ldbc.dsl.logging.LogHandler
 import ldbc.generated.example.Category
 
 class CategoryRepository @Inject() (
-  dataSource: DataSource
+  dataSource: DataSource[IO]
 ):
 
   given LogHandler[IO] = LogHandler.consoleLogger[IO]

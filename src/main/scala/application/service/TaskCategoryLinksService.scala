@@ -1,13 +1,11 @@
 
 package application.service
 
-import javax.sql.DataSource
 import javax.inject.Inject
 
 import cats.effect.IO
 
 import ldbc.sql.*
-import ldbc.dsl.ConnectionIO
 import ldbc.dsl.io.*
 import ldbc.dsl.logging.{ LogEvent, LogHandler }
 import ldbc.query.builder.TableQuery
@@ -17,7 +15,7 @@ import ldbc.generated.example.{ Task, Category }
 import infrastructure.mysql.repository.Query
 
 class TaskCategoryLinksService @Inject() (
-  dataSource: DataSource,
+  dataSource: DataSource[IO],
 ):
 
   // SQL文中の`?`を順にリストの値で置き換える関数
@@ -48,7 +46,7 @@ class TaskCategoryLinksService @Inject() (
         case Some(_) => Query.task.insertInto(
           table => (table.categoryId, table.title, table.body, table.status)
         ).values((categoryId, title, body, status)).update
-        case None => ConnectionIO.pure[IO, Int](-1)
+        case None => Connection.pure[IO, Int](-1)
     yield result
     query.transaction(dataSource)
 
@@ -56,6 +54,6 @@ class TaskCategoryLinksService @Inject() (
     (for
       categoryDeleted <- Query.category.delete.where(_.id === id).update
       taskDeleted <- categoryDeleted match
-        case 0 => ConnectionIO.pure[IO, Int](0)
+        case 0 => Connection.pure[IO, Int](0)
         case _ => Query.task.delete.where(_.categoryId === id).update
     yield categoryDeleted + taskDeleted).transaction(dataSource)

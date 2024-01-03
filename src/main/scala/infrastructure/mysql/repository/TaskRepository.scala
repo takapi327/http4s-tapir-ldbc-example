@@ -1,20 +1,18 @@
 
 package infrastructure.mysql.repository
 
-import javax.sql.DataSource
 import javax.inject.Inject
 
 import cats.effect.IO
 
 import ldbc.sql.*
-import ldbc.dsl.ConnectionIO
 import ldbc.dsl.io.*
 import ldbc.dsl.logging.LogHandler
 import ldbc.generated.example.Task
 import ldbc.query.builder.TableQuery
 
 class TaskRepository @Inject() (
-  dataSource: DataSource
+  dataSource: DataSource[IO]
 ):
 
   given LogHandler[IO] = LogHandler.consoleLogger[IO]
@@ -46,7 +44,7 @@ class TaskRepository @Inject() (
           .set("status", status)
           .where(_.id === value.id)
           .update
-        case None => ConnectionIO.pure[IO, Int](0)
+        case None => Connection.pure[IO, Int](0)
     yield result
     query.transaction(dataSource)
 
