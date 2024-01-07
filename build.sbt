@@ -7,7 +7,7 @@ ThisBuild / startYear := Some(2023)
 lazy val root = (project in file("."))
   .settings(
     name := "http4s-tapir-ldbc-example",
-    scalaVersion := "3.3.0",
+    scalaVersion := "3.3.1",
     run / fork := true,
     javaOptions ++= Seq(
       "-Dlogback.configurationFile=conf/logback.xml"
